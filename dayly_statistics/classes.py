@@ -3,7 +3,10 @@ import matplotlib.pyplot as plt
 import numpy as np
 import datetime
 
-
+'''
+Была идея держать отдельно дни, недели, месяца и т.п., но я подумал, что достаточно просто деражать дни и всё. 
+А для вывода графика брать нужное число дней.
+'''
 
 class Schedule:
     '''
@@ -15,13 +18,39 @@ class Schedule:
     years: list of years
     '''
     def __init__(self, activity_names):
+        self.activity_names = activity_names
+
+        self.current_day = None
+
         self.days = [] # up to 6 days
         self.weeks = [] # up to 4 weeks
         self.months = [] # up to 12 months
         self.years = []
-        self.activity_dict = dict(zip(range(len(activity_names)), activity_names))
-        
 
+    def begin_day(self):
+        '''
+        Creating new day
+        '''
+        self.current_day = Day(self.activity_names)
+
+    def end_day(self):
+        '''
+        Adding current day to schedule and starting new day
+        '''
+        self.add_day(self.current_day)
+        self.current_day = None
+
+
+    def add_timestamp(self, activity, time_stamp):
+        '''
+        Adding timestamp to the current day in the schedule
+
+        activity: name of activity
+        time_stamp: TimeStamp object
+        '''
+        self.current_day.add_time(activity, time_stamp)
+
+        
     def add_day(self, day):
         '''
         Adding day to schedule
@@ -30,19 +59,39 @@ class Schedule:
         '''
         self.days.append(day)
         if len(self.days) == 7:
-            self.weeks.append(Week(self.activity_dict))
-            self.weeks[-1].add_time(self.days)
+            self.weeks.append(Week(self.activity_names))
+            while self.days:
+                self.weeks[-1].add_time(self.days.pop(0))
             self.days = []
 
         if len(self.weeks) == 5:
-            self.months.append(Month(self.activity_dict))
-            self.months[-1].add_time(self.weeks)
+            self.months.append(Month(self.activity_names))
+            while self.weeks:
+                self.months[-1].add_time(self.weeks.pop(0))
             self.weeks = []
 
         if len(self.months) == 13:
-            self.years.append(Year(self.activity_dict))
-            self.years[-1].add_time(self.months)
+            self.years.append(Year(self.activity_names))
+            while self.months:
+                self.years[-1].add_time(self.months.pop(0))
             self.months = []
+
+    def show_time_distribution(self, activity, time_scale, position = 0):
+        '''
+        Show plot of activity's time distribution
+
+        activity: name of activity
+        time_scale: number of days to show; either "days" or "weeks" or "months" or "years"
+        position: how many "time_scale"s to skip
+        
+        '''
+        '''
+        Добавь проверки. Сделай нормальное добавление дней в недели, чтобы можна было смотреть не полные недели и т.п.
+        '''
+
+
+        getattr(self, time_scale)[-1 - position].show_time_distribution(activity)
+
 
 class TimeStamp:
     '''
@@ -62,15 +111,16 @@ class TimeStamp:
         begining, end = self.start[0] * 60 + self.start[1], self.finish[0] * 60 + self.finish[1]
         return range(begining, end)
 
-class TimeLable:
-    def __init__(self, activity_types_dict):
-        self.spended_time = {activity : [] for activity in activity_types_dict}
 
-    def add_time(self, activity, time):
+class TimeLable:
+    def __init__(self):
+        self.spended_time = []
+
+    def add_time(self, time):
         '''
         Adding either timestamp (for class Day) or TimeLeble-like (for class Week, Month, Year) object to corresponding activity list
         '''
-        self.spended_time[activity].append(time)
+        self.spended_time.append(time)
 
 
     def make_time_distribution(self, activity):
@@ -80,7 +130,7 @@ class TimeLable:
         distribution = []
 
         # Converting timestamps into range of minutes to catch activity's time distribution
-        for lowerTimeLableInstance in self.spended_time[activity]:
+        for lowerTimeLableInstance in self.spended_time:
             distribution.extend(lowerTimeLableInstance.make_time_distribution(activity))
 
         return distribution
@@ -114,23 +164,44 @@ class TimeLable:
 
 
 class Day(TimeLable):
-    def __init__(self, activity_types_dict):
-        super().__init__(activity_types_dict)
+    def __init__(self, activity_names):
+        super().__init__()
+        self.spended_time = {activity : [] for activity in activity_names}
         self.date = datetime.date.today().strftime("%d-%m-%YYYY")
+
+    def add_time(self, activity, time):
+        '''
+        time: TimeStamp object
+        '''
+        self.spended_time[activity].append(time)
+        
+    
+    def make_time_distribution(self, activity):
+        '''
+        Converting timestamps (TimeLable-like object or timestamp) into range of minutes and adding them to distribution list
+        '''
+        distribution = []
+
+        # Converting timestamps into range of minutes to catch activity's time distribution
+        for lowerTimeLableInstance in self.spended_time[activity]:
+            distribution.extend(lowerTimeLableInstance.make_time_distribution(activity))
+
+        return distribution
 
     def get_date(self):
         return self.date
 
+
 class Week(TimeLable):
-    def __init__(self, activity_types_dict):
-        super().__init__(activity_types_dict)
+    def __init__(self):
+        super().__init__()
 
     
 class Month(TimeLable):
-    def __inti__(self, activity_types_dict):
-        super().__init__(activity_types_dict)
+    def __inti__(self):
+        super().__init__()
     
 
 class Year(TimeLable):
-    def __init__(self, activity_types_dict):
-        super().__init__(activity_types_dict)
+    def __init__(self):
+        super().__init__()
