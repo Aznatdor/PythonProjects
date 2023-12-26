@@ -40,26 +40,30 @@ week.add_time(day2)
 # day2.show_time_distribution(1)
 week.show_time_distribution(1)'''
 
-schedule = classes.Schedule(["Work"])
-schedule.begin_day()
+time_stat = classes.TimeStatistics(["Work"])
+time_stat.begin_day()
 
 timetable1 = [
     ((6,3), (7, 11)) , ((8,35), (9,43)), ((9,52),(10,52)), ((11,6), (12,51)), ((13,15),(13,42))
 ]
 
 for timestamp in timetable1:
-    schedule.add_timestamp("Work", classes.TimeStamp(*timestamp))
+    time_stat.add_timestamp("Work", classes.TimeStamp(*timestamp))
 
-schedule.end_day()
-schedule.begin_day()
+time_stat.end_day()
+time_stat.begin_day()
 
 timetable2 = [
     ((6,54),(7,29)), ((8,32), (10,24)), ((10,58), (12,21)), ((12,48),(13,41)), ((15,11), (16,6))
 ]
 
 for timestamp in timetable2:
-    schedule.add_timestamp("Work", classes.TimeStamp(*timestamp))
+    time_stat.add_timestamp("Work", classes.TimeStamp(*timestamp))
 
-schedule.end_day()
+time_stat.end_day()
 
-schedule.show_time_distribution("Work", "days")
+time_stat.show_time_distribution("Work", "years")
+time_stat.show_time_distribution("Work", "months")
+time_stat.show_time_distribution("Work", "weeks")
+time_stat.show_time_distribution("Work", "days")
+time_stat.show_time_distribution("Work", "days", 1)

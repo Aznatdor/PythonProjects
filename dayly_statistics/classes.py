@@ -1,14 +1,14 @@
 import seaborn as sns
 import matplotlib.pyplot as plt
 import numpy as np
-import datetime
+from datetime import datetime, timedelta
 
 '''
 Была идея держать отдельно дни, недели, месяца и т.п., но я подумал, что достаточно просто деражать дни и всё. 
 А для вывода графика брать нужное число дней.
 '''
 
-class Schedule:
+class TimeStatistics:
     '''
     Class for storing all time data 
 
@@ -20,12 +20,17 @@ class Schedule:
     def __init__(self, activity_names):
         self.activity_names = activity_names
 
+        self.today, self.tomorrow = None, None 
+
         self.current_day = None
 
-        self.days = [] # up to 6 days
-        self.weeks = [] # up to 4 weeks
-        self.months = [] # up to 12 months
-        self.years = []
+        self.days = []
+        self.weeks = [Week()]
+        self.months = [Month()]
+
+        self.years = [Year()]
+
+        self.years[-1].add_time(self.months[-1]) # intializing years list with the first month
 
     def begin_day(self):
         '''
@@ -33,9 +38,15 @@ class Schedule:
         '''
         self.current_day = Day(self.activity_names)
 
+        # getting today's and tomorrow's date 
+
+        self.today = datetime.today()
+        self.tomorrow = self.today + timedelta(days=1)
+
+
     def end_day(self):
         '''
-        Adding current day to schedule and starting new day
+        Adding current day to the schedule
         '''
         self.add_day(self.current_day)
         self.current_day = None
@@ -57,24 +68,27 @@ class Schedule:
 
         day: Day object
         '''
+
         self.days.append(day)
-        if len(self.days) == 7:
-            self.weeks.append(Week(self.activity_names))
-            while self.days:
-                self.weeks[-1].add_time(self.days.pop(0))
-            self.days = []
+        self.weeks[-1].add_time(day)
+        self.months[-1].add_time(day)
 
-        if len(self.weeks) == 5:
-            self.months.append(Month(self.activity_names))
-            while self.weeks:
-                self.months[-1].add_time(self.weeks.pop(0))
-            self.weeks = []
+        
+        # creating new week
+        if self.today.strftime("%A") == "Monday":
+            new_week = Week(self.activity_names)
+            self.weeks.append(new_week)
 
-        if len(self.months) == 13:
-            self.years.append(Year(self.activity_names))
-            while self.months:
-                self.years[-1].add_time(self.months.pop(0))
-            self.months = []
+        # creating new month
+        if self.today.month != self.tomorrow.month:
+            new_month = Month(self.activity_names)
+            self.months.append(new_month)
+
+        #   creating new year
+        if self.today.year != self.tomorrow.year:
+            new_year = Year(self.activity_names)
+            self.years.append(new_year)
+
 
     def show_time_distribution(self, activity, time_scale, position = 0):
         '''
@@ -85,11 +99,8 @@ class Schedule:
         position: how many "time_scale"s to skip
         
         '''
-        '''
-        Добавь проверки. Сделай нормальное добавление дней в недели, чтобы можна было смотреть не полные недели и т.п.
-        '''
 
-
+        # showing plot of corresponding time period
         getattr(self, time_scale)[-1 - position].show_time_distribution(activity)
 
 
@@ -152,7 +163,7 @@ class TimeLable:
         # Plot itself
         # sns.histplot(distribution) # add more bins for better visualization
         # sns.kdeplot(distribution)
-        sns.displot(distribution, kind='hist', kde=True)
+        sns.displot(distribution, kind='hist')
 
         # Adding proper x-axis ticks
         plt.xticks(bin_centers, [f"{i}:00" for i in range(24)])
@@ -167,7 +178,7 @@ class Day(TimeLable):
     def __init__(self, activity_names):
         super().__init__()
         self.spended_time = {activity : [] for activity in activity_names}
-        self.date = datetime.date.today().strftime("%d-%m-%YYYY")
+        self.date = datetime.today()
 
     def add_time(self, activity, time):
         '''
