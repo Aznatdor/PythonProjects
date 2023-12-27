@@ -163,7 +163,7 @@ class TimeLable:
         # Plot itself
         # sns.histplot(distribution) # add more bins for better visualization
         # sns.kdeplot(distribution)
-        sns.displot(distribution, kind='hist')
+        sns.displot(distribution, kind='hist', discrete=True)
 
         # Adding proper x-axis ticks
         plt.xticks(bin_centers, [f"{i}:00" for i in range(24)])

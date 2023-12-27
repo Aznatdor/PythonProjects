@@ -2,12 +2,7 @@ import classes
 
 '''
 Make UI
-Add Day, Week, Month class to manage statistics
 Don't forget about "day satifactory"
-'''
-
-'''
-Make timetable
 '''
 
 '''day1 = classes.Day({1: 'abc'})
@@ -38,8 +33,8 @@ week.add_time(day2)
 
 # day1.show_time_distribution(1)
 # day2.show_time_distribution(1)
-week.show_time_distribution(1)'''
-
+week.show_time_distribution(1)
+'''
 time_stat = classes.TimeStatistics(["Work"])
 time_stat.begin_day()
 
@@ -63,7 +58,8 @@ for timestamp in timetable2:
 time_stat.end_day()
 
 time_stat.show_time_distribution("Work", "years")
-time_stat.show_time_distribution("Work", "months")
+# time_stat.show_time_distribution("Work", "months")
 time_stat.show_time_distribution("Work", "weeks")
-time_stat.show_time_distribution("Work", "days")
+# time_stat.show_time_distribution("Work", "days")
 time_stat.show_time_distribution("Work", "days", 1)
+
