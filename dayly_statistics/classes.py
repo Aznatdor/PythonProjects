@@ -32,16 +32,16 @@ class TimeStatistics:
 
         self.years[-1].add_time(self.months[-1]) # intializing years list with the first month
 
-    def begin_day(self):
+    def begin_day(self, date_str):
         '''
         Creating new day
         '''
-        self.current_day = Day(self.activity_names)
-
         # getting today's and tomorrow's date 
-
-        self.today = datetime.today()
+        self.today = datetime.strptime(date_str, "%d.%m.%Y")
         self.tomorrow = self.today + timedelta(days=1)
+
+        # creating new day
+        self.current_day = Day(self.activity_names, date_str)
 
 
     def end_day(self):
@@ -76,17 +76,17 @@ class TimeStatistics:
         
         # creating new week
         if self.today.strftime("%A") == "Monday":
-            new_week = Week(self.activity_names)
+            new_week = Week()
             self.weeks.append(new_week)
 
         # creating new month
         if self.today.month != self.tomorrow.month:
-            new_month = Month(self.activity_names)
+            new_month = Month()
             self.months.append(new_month)
 
         #   creating new year
         if self.today.year != self.tomorrow.year:
-            new_year = Year(self.activity_names)
+            new_year = Year()
             self.years.append(new_year)
 
 
@@ -175,10 +175,10 @@ class TimeLable:
 
 
 class Day(TimeLable):
-    def __init__(self, activity_names):
+    def __init__(self, activity_names, date):
         super().__init__()
         self.spended_time = {activity : [] for activity in activity_names}
-        self.date = datetime.today()
+        self.date = date
 
     def add_time(self, activity, time):
         '''
@@ -189,7 +189,8 @@ class Day(TimeLable):
     
     def make_time_distribution(self, activity):
         '''
-        Converting timestamps (TimeLable-like object or timestamp) into range of minutes and adding them to distribution list
+        Converting timestamps (TimeLable-like object or timestamp) into range of minutes 
+        and adding them to distribution list
         '''
         distribution = []
 
